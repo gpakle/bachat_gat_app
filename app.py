@@ -91,23 +91,23 @@ else:
     
     # Load the selected page
     if selected == "Dashboard":
-        from pages import 1_Dashboard
-        1_Dashboard.app()
+        from pages import dashboard
+        dashboard.app()
     elif selected == "Members":
-        from pages import 2_Members
-        2_Members.app()
+        from pages import members
+        members.app()
     elif selected == "Contributions":
-        from pages import 3_Contributions
-        3_Contributions.app()
+        from pages import contributions
+        contributions.app()
     elif selected == "Loans":
-        from pages import 4_Loans
-        4_Loans.app()
+        from pages import loans
+        loans.app()
     elif selected == "Meetings":
-        from pages import 5_Meetings
-        5_Meetings.app()
+        from pages import meetings
+        meetings.app()
     elif selected == "Fines":
-        from pages import 6_Fines
-        6_Fines.app()
+        from pages import fines
+        fines.app()
     elif selected == "Reports":
-        from pages import 7_Reports
-        7_Reports.app()
+        from pages import reports
+        reports.app()
