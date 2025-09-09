@@ -4,19 +4,11 @@ from streamlit_option_menu import option_menu
 
 # Page configuration
 st.set_page_config(
-    page_title="बचत गट व्यवस्थापन",
+    page_title="Savings Group Management",
     page_icon="💰",
     layout="wide",
     initial_sidebar_state="expanded"
 )
-
-# Initialize session state for authentication
-if 'logged_in' not in st.session_state:
-    st.session_state.logged_in = False
-if 'user' not in st.session_state:
-    st.session_state.user = None
-if 'current_cycle' not in st.session_state:
-    st.session_state.current_cycle = get_current_cycle()
 
 # Custom CSS
 st.markdown("""
@@ -46,68 +38,76 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Initialize session state for authentication
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
+if 'user' not in st.session_state:
+    st.session_state.user = None
+if 'current_cycle' not in st.session_state:
+    st.session_state.current_cycle = get_current_cycle()
+
 # Login Section
 if not st.session_state.logged_in:
-    st.markdown('<h1 class="main-header">बचत गट व्यवस्थापन प्रणाली</h1>', unsafe_allow_html=True)
+    st.markdown('<h1 class="main-header">Savings Group Management System</h1>', unsafe_allow_html=True)
     
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         with st.form("login_form"):
-            st.subheader("लॉगिन करा")
-            email = st.text_input("ईमेल")
-            password = st.text_input("पासवर्ड", type="password")
-            login_button = st.form_submit_button("लॉगिन")
+            st.subheader("Login")
+            email = st.text_input("Email")
+            password = st.text_input("Password", type="password")
+            login_button = st.form_submit_button("Login")
             
             if login_button:
                 user = login_user(email, password)
                 if user:
                     st.session_state.logged_in = True
                     st.session_state.user = user
-                    st.success("यशस्वीरीत्या लॉगिन केले!")
+                    st.success("Login successful!")
                     st.rerun()
                 else:
-                    st.error("अवैध ईमेल किंवा पासवर्ड.")
+                    st.error("Invalid email or password.")
 
 # Main Application
 else:
     # Sidebar with navigation
     with st.sidebar:
-        st.title(f"नमस्कार, {st.session_state.user['full_name']}")
+        st.title(f"Welcome, {st.session_state.user['full_name']}")
         
         # Navigation menu
         selected = option_menu(
-            menu_title="मुख्य मेनू",
-            options=["डॅशबोर्ड", "सदस्य", "योगदान", "उधार", "मीटिंग", "जुलेबी", "अहवाल"],
+            menu_title="Main Menu",
+            options=["Dashboard", "Members", "Contributions", "Loans", "Meetings", "Fines", "Reports"],
             icons=["house", "people", "cash-coin", "bank", "calendar-event", "exclamation-circle", "bar-chart"],
             menu_icon="cast",
             default_index=0,
         )
         
         # Logout button
-        if st.button("लॉगआउट"):
+        if st.button("Logout"):
             st.session_state.logged_in = False
             st.session_state.user = None
             st.rerun()
     
     # Load the selected page
-    if selected == "डॅशबोर्ड":
-        from pages import 1_डॅशबोर्ड
-        1_डॅशबोर्ड.app()
-    elif selected == "सदस्य":
-        from pages import 2_सदस्य
-        2_सदस्य.app()
-    elif selected == "योगदान":
-        from pages import 3_योगदान
-        3_योगदान.app()
-    elif selected == "उधार":
-        from pages import 4_उधार
-        4_उधार.app()
-    elif selected == "मीटिंग":
-        from pages import 5_मीटिंग
-        5_मीटिंग.app()
-    elif selected == "जुलेबी":
-        from pages import 6_जुलेबी
-        6_जुलेबी.app()
-    elif selected == "अहवाल":
-        from pages import 7_अहवाल
-        7_अहवाल.app()
+    if selected == "Dashboard":
+        from pages import 1_Dashboard
+        1_Dashboard.app()
+    elif selected == "Members":
+        from pages import 2_Members
+        2_Members.app()
+    elif selected == "Contributions":
+        from pages import 3_Contributions
+        3_Contributions.app()
+    elif selected == "Loans":
+        from pages import 4_Loans
+        4_Loans.app()
+    elif selected == "Meetings":
+        from pages import 5_Meetings
+        5_Meetings.app()
+    elif selected == "Fines":
+        from pages import 6_Fines
+        6_Fines.app()
+    elif selected == "Reports":
+        from pages import 7_Reports
+        7_Reports.app()
