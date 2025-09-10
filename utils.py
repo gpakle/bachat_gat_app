@@ -1,5 +1,5 @@
 import streamlit as st
-from supabase import create_client, Client
+from supabase import create_client
 import os
 from datetime import datetime, date
 import pandas as pd
@@ -37,22 +37,6 @@ def get_current_cycle():
     except Exception as e:
         st.error(f"Error fetching current cycle: {e}")
         return None
-
-def get_member_contributions(member_id, cycle_id):
-    try:
-        response = supabase.table("contributions").select("amount, payment_date").eq("member_id", member_id).eq("cycle_id", cycle_id).execute()
-        return response.data
-    except Exception as e:
-        st.error(f"Error fetching contributions: {e}")
-        return []
-
-def get_member_loans(member_id):
-    try:
-        response = supabase.table("loans").select("*").eq("borrower_id", member_id).execute()
-        return response.data
-    except Exception as e:
-        st.error(f"Error fetching loans: {e}")
-        return []
 
 def get_group_summary(cycle_id):
     try:
