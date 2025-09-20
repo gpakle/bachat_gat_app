@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import os
 from datetime import date
+import io
 
 # === File paths ===
 DATA_DIR = "data"
@@ -26,6 +27,7 @@ loans = load_csv(LOANS_FILE, ["loan_id", "member_id", "date", "amount", "status"
 repayments = load_csv(REPAYMENTS_FILE, ["loan_id", "date", "amount"])
 
 # === Streamlit UI ===
+st.set_page_config(page_title="Savings Group Management", layout="wide")
 st.title("💰 Small Savings Group Management System")
 
 menu = ["👥 Members", "💵 Savings", "📑 Loans", "📊 Reports"]
@@ -121,18 +123,71 @@ elif choice == "📑 Loans":
 elif choice == "📊 Reports":
     st.header("📊 Group Reports")
 
+    # Summary Metrics
     total_savings = savings["amount"].sum() if not savings.empty else 0
     total_loans = loans["amount"].sum() if not loans.empty else 0
     total_repayments = repayments["amount"].sum() if not repayments.empty else 0
     outstanding_loans = total_loans - total_repayments
 
-    st.metric("💵 Total Savings", f"₹{total_savings}")
-    st.metric("📑 Total Loans", f"₹{total_loans}")
-    st.metric("↩️ Total Repaid", f"₹{total_repayments}")
-    st.metric("❗ Outstanding Loans", f"₹{outstanding_loans}")
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("💵 Total Savings", f"₹{total_savings}")
+    col2.metric("📑 Total Loans", f"₹{total_loans}")
+    col3.metric("↩️ Total Repaid", f"₹{total_repayments}")
+    col4.metric("❗ Outstanding Loans", f"₹{outstanding_loans}")
 
-    st.subheader("Member-wise Savings")
+    # --- Member-wise Savings ---
+    st.subheader("📈 Member-wise Savings")
     if not savings.empty:
         member_savings = savings.groupby("member_id")["amount"].sum().reset_index()
         report = members.merge(member_savings, left_on="id", right_on="member_id", how="left").fillna(0)
         st.dataframe(report[["name", "amount"]].rename(columns={"amount": "total_savings"}))
+        st.bar_chart(report.set_index("name")["amount"])
+    else:
+        st.info("No savings recorded yet.")
+
+    # --- Savings Growth Over Time ---
+    st.subheader("📊 Savings Growth Over Time")
+    if not savings.empty:
+        savings_over_time = savings.groupby("date")["amount"].sum().reset_index()
+        savings_over_time["date"] = pd.to_datetime(savings_over_time["date"])
+        savings_over_time = savings_over_time.set_index("date").sort_index()
+        st.line_chart(savings_over_time["amount"])
+    else:
+        st.info("No savings data to show trend.")
+
+    # --- Loans vs Repayments ---
+    st.subheader("📉 Loans vs Repayments")
+    if not loans.empty:
+        loan_sum = loans["amount"].sum()
+        repay_sum = repayments["amount"].sum() if not repayments.empty else 0
+        compare_df = pd.DataFrame({
+            "Type": ["Loans Given", "Repayments"],
+            "Amount": [loan_sum, repay_sum]
+        })
+        st.bar_chart(compare_df.set_index("Type"))
+    else:
+        st.info("No loans data to compare.")
+
+    # --- Export Section ---
+    st.subheader("📂 Export Reports")
+    if st.button("Export to Excel"):
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine="openpyxl") as writer:
+            members.to_excel(writer, sheet_name="Members", index=False)
+            savings.to_excel(writer, sheet_name="Savings", index=False)
+            loans.to_excel(writer, sheet_name="Loans", index=False)
+            repayments.to_excel(writer, sheet_name="Repayments", index=False)
+
+            # Summary Sheet
+            summary_df = pd.DataFrame({
+                "Metric": ["Total Savings", "Total Loans", "Total Repaid", "Outstanding Loans"],
+                "Value": [total_savings, total_loans, total_repayments, outstanding_loans]
+            })
+            summary_df.to_excel(writer, sheet_name="Summary", index=False)
+
+        st.download_button(
+            label="📥 Download Excel Report",
+            data=output.getvalue(),
+            file_name=f"savings_group_report_{date.today()}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
