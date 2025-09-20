@@ -1,1 +1,0 @@
-# bachat_gat_app
